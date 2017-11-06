@@ -1,0 +1,57 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure(2) do |config|
+
+  config.vm.box = "ubuntu/trusty64"
+
+  # config.vm.box_check_update = false
+
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  config.vm.network "private_network", type: "dhcp"
+
+  # config.vm.network "public_network", type: "dhcp"
+
+  config.vm.synced_folder "../../GitHub/cortoproject", "/home/vagrant/cortoproject", create: true
+  config.vm.synced_folder "../../Software", "/home/vagrant/Software", create: true
+  config.vm.synced_folder "../../GitHub", "/home/vagrant/GitHub", create: true
+  config.vm.synced_folder "../../", "/home/vagrant/home", create: true
+
+  # config.vm.provider "virtualbox" do |vb|
+
+  config.ssh.forward_agent = true
+  config.ssh.forward_x11 = true
+
+  config.vm.provision "fix-no-tty", type: "shell" do |s|
+    s.privileged = false
+    s.inline = "sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile"
+  end
+
+  config.vm.provision :shell, path: "provision.sh"
+
+  # Configure VM Ram usage
+  config.vm.provider :virtualbox do |v|
+    v.customize ["modifyvm", :id, "--memory", 2048]
+    v.cpus = 2
+  end
+
+  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
+  # such as FTP and Heroku are also available. See the documentation at
+  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
+  # config.push.define "atlas" do |push|
+  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
+  # end
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   sudo apt-get update
+  #   sudo apt-get install -y apache2
+  # SHELL
+end
